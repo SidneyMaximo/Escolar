@@ -1,0 +1,133 @@
+import { useState } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import {
+  GraduationCap,
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  Calendar,
+  ClipboardCheck,
+  FileText,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  ChevronRight,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { signOut } from '@/lib/auth';
+
+const ADMIN_NAV = [
+  { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard },
+  { to: '/admin/alunos', label: 'Alunos', icon: Users },
+  { to: '/admin/professores', label: 'Professores', icon: BookOpen },
+  { to: '/admin/turmas', label: 'Turmas', icon: Calendar },
+  { to: '/admin/notas', label: 'Notas', icon: ClipboardCheck },
+  { to: '/admin/matriculas', label: 'Matrículas', icon: FileText },
+  { to: '/admin/usuarios', label: 'Usuários', icon: Settings },
+];
+
+export function AdminLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/entrar');
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 w-64 transform border-r border-border bg-card transition-transform lg:static lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <div className="flex h-16 items-center gap-2 border-b border-border px-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <GraduationCap className="h-5 w-5" />
+          </div>
+          <span className="text-lg font-bold text-foreground">Painel Admin</span>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="ml-auto rounded-lg p-1 text-muted-foreground hover:bg-muted lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <nav className="flex flex-col gap-1 p-3">
+          {ADMIN_NAV.map((item) => {
+            const isActive =
+              item.to === '/admin'
+                ? location.pathname === '/admin'
+                : location.pathname.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setSidebarOpen(false)}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {item.label}
+                {isActive && <ChevronRight className="ml-auto h-3 w-3" />}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="absolute bottom-0 left-0 right-0 border-t border-border p-3">
+          <button
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <h2 className="text-lg font-semibold text-foreground">
+            {ADMIN_NAV.find((item) =>
+              item.to === '/admin'
+                ? location.pathname === '/admin'
+                : location.pathname.startsWith(item.to)
+            )?.label ?? 'Painel Administrativo'}
+          </h2>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
