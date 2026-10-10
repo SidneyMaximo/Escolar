@@ -117,6 +117,11 @@ CREATE TABLE schools (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Inserção de escola padrão inicial para novos cadastros
+INSERT INTO schools (id, name, slug)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Escola Modelo', 'escola-modelo')
+ON CONFLICT (id) DO NOTHING;
+
 -- PROFILES (extends auth.users)
 CREATE TABLE profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -676,7 +681,8 @@ VALUES
   ('avatars', 'avatars', true),
   ('enrollment-docs', 'enrollment-docs', false),
   ('report-cards', 'report-cards', false),
-  ('student-photos', 'student-photos', false);
+  ('student-photos', 'student-photos', false)
+ON CONFLICT (id) DO NOTHING;
 
 -- 11. STORAGE RLS POLICIES
 -- ⚠️ CRITICAL: Storage policies use auth.uid() and NEVER expose service_role keys.
