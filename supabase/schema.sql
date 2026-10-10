@@ -14,94 +14,7 @@ CREATE TYPE grade_type AS ENUM ('avaliacao', 'trabalho', 'prova', 'participacao'
 CREATE TYPE attendance_status AS ENUM ('presente', 'ausente', 'justificado', 'atraso');
 CREATE TYPE message_status AS ENUM ('sent', 'read', 'archived');
 
--- 3. HELPER FUNCTIONS (SECURITY DEFINER — executam com privilégios elevados)
--- Estas funções são usadas nas políticas RLS e NÃO expõem dados sensíveis.
-
-CREATE OR REPLACE FUNCTION get_user_school_id()
-RETURNS uuid
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT school_id FROM profiles WHERE id = auth.uid() LIMIT 1;
-$$;
-
-CREATE OR REPLACE FUNCTION get_user_role()
-RETURNS app_role
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT role FROM profiles WHERE id = auth.uid() LIMIT 1;
-$$;
-
-CREATE OR REPLACE FUNCTION is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION is_teacher()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'teacher'
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION is_parent()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'parent'
-  );
-$$;
-
--- Verifica se o usuário é professor de uma turma específica
-CREATE OR REPLACE FUNCTION is_teacher_of_class(p_class_id uuid)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM classes
-    WHERE id = p_class_id AND teacher_id = auth.uid()
-  );
-$$;
-
--- Verifica se o aluno é filho do usuário autenticado
-CREATE OR REPLACE FUNCTION is_parent_of_student(p_student_id uuid)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM students
-    WHERE id = p_student_id AND parent_guardian_id = auth.uid()
-  );
-$$;
-
--- 4. TABLES
+-- 3. TABLES
 
 -- SCHOOLS (tenants)
 CREATE TABLE schools (
@@ -272,7 +185,7 @@ CREATE TABLE messages (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- 5. INDEXES (performance)
+-- 4. INDEXES (performance)
 CREATE INDEX idx_profiles_school ON profiles(school_id);
 CREATE INDEX idx_profiles_role ON profiles(role);
 CREATE INDEX idx_students_school ON students(school_id);
@@ -290,6 +203,93 @@ CREATE INDEX idx_attendance_student ON attendance(student_id);
 CREATE INDEX idx_attendance_class_date ON attendance(class_id, date);
 CREATE INDEX idx_messages_sender ON messages(sender_id);
 CREATE INDEX idx_messages_recipient ON messages(recipient_id);
+
+-- 5. HELPER FUNCTIONS (SECURITY DEFINER — executam com privilégios elevados)
+-- Estas funções são usadas nas políticas RLS e agora as tabelas já existem.
+
+CREATE OR REPLACE FUNCTION get_user_school_id()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT school_id FROM profiles WHERE id = auth.uid() LIMIT 1;
+$$;
+
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS app_role
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role FROM profiles WHERE id = auth.uid() LIMIT 1;
+$$;
+
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION is_teacher()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'teacher'
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION is_parent()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'parent'
+  );
+$$;
+
+-- Verifica se o usuário é professor de uma turma específica
+CREATE OR REPLACE FUNCTION is_teacher_of_class(p_class_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM classes
+    WHERE id = p_class_id AND teacher_id = auth.uid()
+  );
+$$;
+
+-- Verifica se o aluno é filho do usuário autenticado
+CREATE OR REPLACE FUNCTION is_parent_of_student(p_student_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM students
+    WHERE id = p_student_id AND parent_guardian_id = auth.uid()
+  );
+$$;
 
 -- 6. ENABLE RLS ON ALL TABLES
 ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
@@ -689,7 +689,10 @@ ON CONFLICT (id) DO NOTHING;
 -- All private buckets enforce school_id tenant isolation via folder structure: {school_id}/{user_id}/file
 
 -- === AVATARS (public bucket) ===
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- NOTA: storage.objects já tem RLS habilitado por padrão no Supabase.
+-- Não executar ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY
+-- pois exige ownership (role supabase_storage_admin) e gera erro 42501.
+-- As políticas CREATE POLICY abaixo funcionam normalmente sem o ALTER.
 
 -- Anyone can read avatars (public bucket)
 CREATE POLICY "avatars_select_public" ON storage.objects
