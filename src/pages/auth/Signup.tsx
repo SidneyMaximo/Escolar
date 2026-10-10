@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signUp } from '@/lib/auth';
-import type { AppRole } from '@/types/database';
 
 export function Signup() {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<AppRole>('parent');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,8 +15,8 @@ export function Signup() {
     setError(null);
     setLoading(true);
     try {
-      // TODO: school_id should come from selection or default
-      await signUp(email, password, fullName, role, '00000000-0000-0000-0000-000000000001');
+      // Role fixa como 'parent' — professores e admins são criados apenas pelo administrador
+      await signUp(email, password, fullName, 'parent', '00000000-0000-0000-0000-000000000001');
       navigate('/entrar');
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta. Tente novamente.');
@@ -72,21 +70,9 @@ export function Signup() {
           placeholder="Mínimo 6 caracteres"
         />
       </div>
-      <div>
-        <label htmlFor="role" className="block text-sm font-medium text-foreground">Tipo de conta</label>
-        <select
-          id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value as AppRole)}
-          className="mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/20"
-        >
-          <option value="parent">Responsável / Pai / Mãe</option>
-          <option value="teacher">Professor</option>
-        </select>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Contas de administrador são criadas apenas pela coordenação.
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground">
+        Cadastro exclusivo para pais/responsáveis. Professores e administradores são criados pela coordenação.
+      </p>
       <button
         type="submit"
         disabled={loading}
