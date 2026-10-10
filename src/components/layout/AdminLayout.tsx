@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   FileText,
   Settings,
+  Globe,
   LogOut,
   Menu,
   X,
@@ -25,6 +26,7 @@ const ADMIN_NAV = [
   { to: '/admin/notas', label: 'Notas', icon: ClipboardCheck },
   { to: '/admin/matriculas', label: 'Matrículas', icon: FileText },
   { to: '/admin/usuarios', label: 'Usuários', icon: Settings },
+  { to: '/admin/configuracoes', label: 'Configurações do Site', icon: Globe },
 ];
 
 export function AdminLayout() {

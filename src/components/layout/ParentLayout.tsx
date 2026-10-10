@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   FileText,
   MessageSquare,
+  FolderHeart,
   LogOut,
   Menu,
   X,
@@ -17,8 +18,9 @@ import { signOut } from '@/lib/auth';
 const PARENT_NAV = [
   { to: '/pais', label: 'Visão Geral', icon: LayoutDashboard },
   { to: '/pais/filhos', label: 'Meus Filhos', icon: Users },
-  { to: '/pais/notas', label: 'Notas', icon: ClipboardCheck },
+  { to: '/pais/projetos', label: 'Fotos & Projetos', icon: FolderHeart },
   { to: '/pais/boletins', label: 'Boletins', icon: FileText },
+  { to: '/pais/notas', label: 'Notas', icon: ClipboardCheck },
   { to: '/pais/mensagens', label: 'Mensagens', icon: MessageSquare },
 ];
 

@@ -4,6 +4,8 @@ import { signIn } from '@/lib/auth';
 import { ROLE_DASHBOARDS } from '@/types/roles';
 import { supabase } from '@/lib/supabase';
 
+import type { AppRole } from '@/types/database';
+
 export function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -16,17 +18,28 @@ export function Login() {
     setError(null);
     setLoading(true);
     try {
-      const { data } = await signIn(email, password);
-      if (data?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single();
-        const dashboard = ROLE_DASHBOARDS[profile?.role ?? 'parent'];
+      const authData = await signIn(email.trim(), password);
+      if (authData?.user) {
+        let role: AppRole = (authData.user.user_metadata?.role as AppRole) || 'parent';
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authData.user.id)
+            .maybeSingle();
+
+          const profileData = profile as { role?: AppRole } | null;
+          if (profileData?.role) {
+            role = profileData.role;
+          }
+        } catch (profileErr) {
+          console.warn('Usando role de metadados:', profileErr);
+        }
+
+        const dashboard = ROLE_DASHBOARDS[role] || '/admin';
         navigate(dashboard, { replace: true });
       } else {
-        navigate('/', { replace: true });
+        navigate('/admin', { replace: true });
       }
     } catch (err: any) {
       setError(err.message || 'Erro ao entrar. Verifique suas credenciais.');
@@ -44,15 +57,16 @@ export function Login() {
         </div>
       )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-foreground">E-mail</label>
+        <label htmlFor="email" className="block text-sm font-medium text-foreground">E-mail ou Usuário</label>
         <input
           id="email"
-          type="email"
+          type="text"
+          autoComplete="username"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/20"
-          placeholder="seu@email.com"
+          placeholder="Admin@diretor ou seu@email.com"
         />
       </div>
       <div>

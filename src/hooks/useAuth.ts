@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import type { Profile } from '@/types/database';
+import type { Profile, AppRole } from '@/types/database';
 
 interface AuthState {
   session: Session | null;
@@ -19,48 +19,64 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    async function getInitialSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!mounted) return;
-
-      if (session) {
+    async function fetchProfile(session: Session | null): Promise<Profile | null> {
+      if (!session) return null;
+      try {
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (mounted) {
-          setState({ session, profile, isLoading: false });
+        if (profile) return profile;
+      } catch (err) {
+        console.warn('Erro ao carregar perfil do Supabase:', err);
+      }
+
+      // Fallback seguro usando os metadados do auth.users (ex: criado via script SQL ou admin)
+      const metaRole = (session.user.user_metadata?.role as AppRole) || 'parent';
+      return {
+        id: session.user.id,
+        school_id: session.user.user_metadata?.school_id || '00000000-0000-0000-0000-000000000001',
+        full_name: session.user.user_metadata?.full_name || session.user.email || 'Usuário',
+        role: metaRole,
+        status: (metaRole === 'admin' ? 'approved' : session.user.user_metadata?.status || 'approved'),
+        cpf: null,
+        phone: null,
+        avatar_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as Profile;
+    }
+
+    async function getInitialSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (session) {
+          const profile = await fetchProfile(session);
+          if (mounted) setState({ session, profile, isLoading: false });
+        } else {
+          if (mounted) setState({ session: null, profile: null, isLoading: false });
         }
-      } else {
-        if (mounted) {
-          setState({ session: null, profile: null, isLoading: false });
-        }
+      } catch (err) {
+        console.warn('Erro ao buscar sessão inicial:', err);
+        if (mounted) setState({ session: null, profile: null, isLoading: false });
       }
     }
 
     getInitialSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session: Session | null) => {
+      async (_event: AuthChangeEvent, session: Session | null) => {
         if (!mounted) return;
 
         if (session) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (mounted) {
-            setState({ session, profile, isLoading: false });
-          }
+          const profile = await fetchProfile(session);
+          if (mounted) setState({ session, profile, isLoading: false });
         } else {
-          if (mounted) {
-            setState({ session: null, profile: null, isLoading: false });
-          }
+          if (mounted) setState({ session: null, profile: null, isLoading: false });
         }
       }
     );

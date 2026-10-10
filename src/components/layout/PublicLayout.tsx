@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { GraduationCap, Menu, X, Phone, Mail, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSiteContent } from '@/lib/siteContent';
 
 const NAV_LINKS = [
   { to: '/', label: 'Início' },
@@ -17,6 +18,10 @@ const NAV_LINKS = [
 export function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const content = useSiteContent();
+  const school = content.school;
+
+  const fullAddress = [school.address, school.neighborhoodCity].filter(Boolean).join(' - ');
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -24,10 +29,10 @@ export function PublicLayout() {
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
               <GraduationCap className="h-6 w-6" />
             </div>
-            <span className="text-xl font-bold text-foreground">Escola Infantil</span>
+            <span className="text-xl font-bold text-foreground">{school.name}</span>
           </Link>
 
           {/* Desktop nav */}
@@ -57,7 +62,7 @@ export function PublicLayout() {
             </Link>
             <Link
               to="/matricula"
-              className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary/90"
+              className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary/90 transition-colors"
             >
               Matricule-se
             </Link>
@@ -127,10 +132,10 @@ export function PublicLayout() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <GraduationCap className="h-5 w-5" />
                 </div>
-                <span className="text-lg font-bold text-foreground">Escola Infantil</span>
+                <span className="text-lg font-bold text-foreground">{school.name}</span>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
-                Educação de qualidade com amor e dedicação para o desenvolvimento integral do seu filho.
+                {school.slogan || 'Educação de qualidade com amor e dedicação para o desenvolvimento integral do seu filho.'}
               </p>
             </div>
 
@@ -139,6 +144,8 @@ export function PublicLayout() {
               <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/sobre" className="hover:text-primary">Sobre Nós</Link></li>
                 <li><Link to="/metodologia" className="hover:text-primary">Metodologia</Link></li>
+                <li><Link to="/equipe" className="hover:text-primary">Nossa Equipe</Link></li>
+                <li><Link to="/galeria" className="hover:text-primary">Galeria de Fotos</Link></li>
                 <li><Link to="/matricula" className="hover:text-primary">Matrícula</Link></li>
                 <li><Link to="/faq" className="hover:text-primary">Perguntas Frequentes</Link></li>
               </ul>
@@ -147,33 +154,43 @@ export function PublicLayout() {
             <div>
               <h3 className="font-semibold text-foreground">Contato</h3>
               <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-primary" />
-                  (11) 1234-5678
-                </li>
-                <li className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-primary" />
-                  contato@escolainfantil.com.br
-                </li>
-                <li className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  Rua das Flores, 123 - São Paulo, SP
-                </li>
+                {school.phone && (
+                  <li className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary shrink-0" />
+                    <a href={`tel:${school.phone.replace(/\D/g, '')}`} className="hover:text-primary transition-colors">
+                      {school.phone}
+                    </a>
+                  </li>
+                )}
+                {school.email && (
+                  <li className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-primary shrink-0" />
+                    <a href={`mailto:${school.email}`} className="hover:text-primary transition-colors">
+                      {school.email}
+                    </a>
+                  </li>
+                )}
+                {fullAddress && (
+                  <li className="flex items-start gap-2">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>{fullAddress}</span>
+                  </li>
+                )}
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold text-foreground">Horário</h3>
+              <h3 className="font-semibold text-foreground">Horário de Funcionamento</h3>
               <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <li>Segunda a Sexta: 7h às 18h</li>
-                <li>Sábado: 8h às 12h</li>
-                <li>Domingo: Fechado</li>
+                <li>{school.openingHoursWeekdays || 'Segunda a Sexta: 7h às 18h'}</li>
+                <li>{school.openingHoursSaturday || 'Sábado: 8h às 12h'}</li>
+                <li>{school.openingHoursSunday || 'Domingo: Fechado'}</li>
               </ul>
             </div>
           </div>
 
           <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Escola Infantil. Todos os direitos reservados.
+            © {new Date().getFullYear()} {school.name}. Todos os direitos reservados.
           </div>
         </div>
       </footer>

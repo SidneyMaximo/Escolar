@@ -1,15 +1,10 @@
 import { GraduationCap, Heart } from 'lucide-react';
-
-const TEAM = [
-  { name: 'Ana Silva', role: 'Diretora Pedagógica', bio: 'Pedagoga com 15 anos de experiência em educação infantil.' },
-  { name: 'Carlos Santos', role: 'Coordenador Acadêmico', bio: 'Mestre em Educação, especialista em currículo BNCC.' },
-  { name: 'Maria Oliveira', role: 'Professora Regente', bio: 'Licenciada em Pedagogia, apaixonada por alfabetização.' },
-  { name: 'João Pereira', role: 'Professor de Artes', bio: 'Artista plástico e educador, estimula criatividade.' },
-  { name: 'Fernanda Lima', role: 'Psicóloga Escolar', bio: 'Especialista em desenvolvimento infantil e socioemocional.' },
-  { name: 'Roberto Alves', role: 'Professor de Educação Física', bio: 'Foca em psicomotricidade e atividades lúdicas.' },
-];
+import { useSiteContent } from '../../lib/siteContent';
 
 export function Team() {
+  const content = useSiteContent();
+  const team = content.team || [];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="text-center">
@@ -20,10 +15,18 @@ export function Team() {
       </div>
 
       <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {TEAM.map((member) => (
-          <div key={member.name} className="group rounded-2xl border border-border bg-card p-6 text-center transition-all hover:border-primary/30 hover:shadow-md">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <GraduationCap className="h-10 w-10" />
+        {team.map((member, index) => (
+          <div key={`${member.name}-${index}`} className="group rounded-2xl border border-border bg-card p-6 text-center transition-all hover:border-primary/30 hover:shadow-md">
+            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+              {member.photoUrl ? (
+                <img
+                  src={member.photoUrl}
+                  alt={member.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <GraduationCap className="h-10 w-10" />
+              )}
             </div>
             <h3 className="text-lg font-semibold text-foreground">{member.name}</h3>
             <p className="text-sm font-medium text-secondary">{member.role}</p>

@@ -6,6 +6,8 @@ import {
   BookOpen,
   ClipboardCheck,
   CalendarCheck,
+  FolderHeart,
+  FileText,
   LogOut,
   Menu,
   X,
@@ -16,8 +18,10 @@ import { signOut } from '@/lib/auth';
 const TEACHER_NAV = [
   { to: '/professor', label: 'Visão Geral', icon: LayoutDashboard },
   { to: '/professor/turmas', label: 'Minhas Turmas', icon: BookOpen },
-  { to: '/professor/notas', label: 'Lançar Notas', icon: ClipboardCheck },
   { to: '/professor/frequencia', label: 'Frequência', icon: CalendarCheck },
+  { to: '/professor/notas', label: 'Lançar Notas', icon: ClipboardCheck },
+  { to: '/professor/projetos', label: 'Fotos & Projetos', icon: FolderHeart },
+  { to: '/professor/boletins', label: 'Boletins', icon: FileText },
 ];
 
 export function TeacherLayout() {

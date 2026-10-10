@@ -133,3 +133,49 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
+
+/* ========================================================
+   ESTILOS DE IMPRESSÃO / SALVAR EM PDF (A4 OFICIAL)
+   ======================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Oculta tudo na tela normal */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Mostra exclusivamente o documento da matrícula */
+  #enrollment-print-zone,
+  #enrollment-print-zone * {
+    visibility: visible;
+  }
+
+  #enrollment-print-zone {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

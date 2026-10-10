@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Clock } from 'lucide-react';
 import { signUp } from '@/lib/auth';
 
 export function Signup() {
@@ -9,20 +10,43 @@ export function Signup() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      // Role fixa como 'parent' — professores e admins são criados apenas pelo administrador
+      // Role fixa como 'parent' com status 'pending' para aprovação do admin
       await signUp(email, password, fullName, 'parent', '00000000-0000-0000-0000-000000000001');
-      navigate('/entrar');
+      setSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta. Tente novamente.');
     } finally {
       setLoading(false);
     }
+  }
+
+  if (success) {
+    return (
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/15 text-amber-600 border border-amber-500/30">
+          <Clock className="h-7 w-7" />
+        </div>
+        <h2 className="text-xl font-bold text-foreground">Conta Criada!</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Seu cadastro foi realizado com sucesso. Para garantir a segurança dos alunos, o seu acesso está <strong>aguardando liberação do Administrador</strong> da escola.
+        </p>
+        <div className="pt-2">
+          <Link
+            to="/entrar"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Ir para a Tela de Login
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

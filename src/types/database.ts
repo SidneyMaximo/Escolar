@@ -20,10 +20,14 @@ export interface Profile {
   id: string;
   school_id: string;
   full_name: string;
+  email?: string | null;
   cpf: string | null;
   phone: string | null;
   avatar_url: string | null;
   role: AppRole;
+  status?: 'active' | 'approved' | 'pending' | 'blocked';
+  assigned_class_id?: string | null;
+  assigned_class_name?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -98,6 +102,20 @@ export interface ReportCard {
   approved_by: string | null;
 }
 
+export interface StudentProject {
+  id: string;
+  school_id: string;
+  title: string;
+  description: string | null;
+  class_id: string | null;
+  student_id: string | null;
+  teacher_id: string;
+  category: 'projeto' | 'evento' | 'atividades' | 'boletim';
+  media_urls: string[];
+  is_published: boolean;
+  created_at: string;
+}
+
 export interface Enrollment {
   id: string;
   school_id: string;
@@ -161,6 +179,7 @@ export interface Database {
       subjects: { Row: Subject; Insert: Omit<Subject, 'id'>; Update: Partial<Subject> };
       grades: { Row: Grade; Insert: Omit<Grade, 'id' | 'created_at'>; Update: Partial<Grade> };
       report_cards: { Row: ReportCard; Insert: Omit<ReportCard, 'id' | 'generated_at'>; Update: Partial<ReportCard> };
+      student_projects: { Row: StudentProject; Insert: Omit<StudentProject, 'id' | 'created_at'>; Update: Partial<StudentProject> };
       enrollments: { Row: Enrollment; Insert: Omit<Enrollment, 'id' | 'created_at'>; Update: Partial<Enrollment> };
       staff: { Row: Staff; Insert: Omit<Staff, 'id'>; Update: Partial<Staff> };
       attendance: { Row: Attendance; Insert: Omit<Attendance, 'id'>; Update: Partial<Attendance> };

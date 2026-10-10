@@ -1,37 +1,45 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Heart, Shield, Star } from 'lucide-react';
+import { useSiteContent } from '@/lib/siteContent';
 
 export function Home() {
+  const content = useSiteContent();
+  const hero = content.hero;
+
   return (
     <div>
       {/* Hero */}
-      <section className="relative flex min-h-[700px] items-center bg-[url('/Aprender%20Tamb%C3%A9m%20%C3%89%20Ser%20Feliz!.png')] bg-cover bg-center-bottom bg-no-repeat">
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent" />
+      <section
+        className="relative flex min-h-[700px] items-center bg-cover bg-center-bottom bg-no-repeat transition-all"
+        style={{ backgroundImage: `url("${hero.bgImage}")` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/40 to-transparent" />
         <div className="relative mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="max-w-xl">
-            <span className="inline-block rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-white shadow-sm">
-              Matrículas abertas 2026
-            </span>
+            {hero.badge && (
+              <span className="inline-block rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-white shadow-sm">
+                {hero.badge}
+              </span>
+            )}
             <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              Educação com amor para o futuro do seu filho
+              {hero.title}
             </h1>
             <p className="mt-6 text-base text-muted-foreground sm:text-lg">
-              Na Escola Infantil, cada criança é única. Nossa metodologia combina aprendizado lúdico,
-              desenvolvimento socioemocional e excelência acadêmica em um ambiente seguro e acolhedor.
+              {hero.subtitle}
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 to="/matricula"
-                className="inline-flex items-center gap-2 rounded-xl bg-secondary px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-secondary/90"
+                className="inline-flex items-center gap-2 rounded-xl bg-secondary px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-secondary/90 transition-colors"
               >
-                Matricule-se Agora
+                {hero.ctaPrimaryText || 'Matricule-se Agora'}
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 to="/sobre"
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/90 px-6 py-3 text-base font-semibold text-foreground backdrop-blur-sm hover:bg-card"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/90 px-6 py-3 text-base font-semibold text-foreground backdrop-blur-sm hover:bg-card transition-colors"
               >
-                Conheça a Escola
+                {hero.ctaSecondaryText || 'Conheça a Escola'}
               </Link>
             </div>
           </div>

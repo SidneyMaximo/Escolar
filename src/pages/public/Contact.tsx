@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { useSiteContent } from '@/lib/siteContent';
 
 export function Contact() {
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const content = useSiteContent();
+  const school = content.school;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,7 +27,7 @@ export function Contact() {
       <div className="mt-16 grid gap-12 lg:grid-cols-2">
         {/* Contact info */}
         <div className="space-y-8">
-          <div className="rounded-2xl border border-border bg-card p-8">
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
             <h2 className="text-xl font-semibold text-foreground">Informações de Contato</h2>
             <div className="mt-6 space-y-6">
               <div className="flex items-start gap-4">
@@ -33,8 +36,16 @@ export function Contact() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Telefone</p>
-                  <p className="text-muted-foreground">(11) 1234-5678</p>
-                  <p className="text-muted-foreground">(11) 98765-4321</p>
+                  {school.phone && (
+                    <a href={`tel:${school.phone.replace(/\D/g, '')}`} className="block text-muted-foreground hover:text-primary transition-colors">
+                      {school.phone}
+                    </a>
+                  )}
+                  {school.phoneSecondary && (
+                    <a href={`tel:${school.phoneSecondary.replace(/\D/g, '')}`} className="block text-muted-foreground hover:text-primary transition-colors">
+                      {school.phoneSecondary}
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -43,8 +54,16 @@ export function Contact() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">E-mail</p>
-                  <p className="text-muted-foreground">contato@escolainfantil.com.br</p>
-                  <p className="text-muted-foreground">matriculas@escolainfantil.com.br</p>
+                  {school.email && (
+                    <a href={`mailto:${school.email}`} className="block text-muted-foreground hover:text-primary transition-colors">
+                      {school.email}
+                    </a>
+                  )}
+                  {school.emailSecondary && (
+                    <a href={`mailto:${school.emailSecondary}`} className="block text-muted-foreground hover:text-primary transition-colors">
+                      {school.emailSecondary}
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -53,9 +72,13 @@ export function Contact() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Endereço</p>
-                  <p className="text-muted-foreground">Rua das Flores, 123</p>
-                  <p className="text-muted-foreground">Jardim Primavera - São Paulo, SP</p>
-                  <p className="text-muted-foreground">CEP: 01234-567</p>
+                  <p className="text-muted-foreground">{school.address || 'Consulte nosso endereço'}</p>
+                  {school.neighborhoodCity && (
+                    <p className="text-muted-foreground">{school.neighborhoodCity}</p>
+                  )}
+                  {school.cep && (
+                    <p className="text-muted-foreground">CEP: {school.cep}</p>
+                  )}
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -64,8 +87,8 @@ export function Contact() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Horário de Atendimento</p>
-                  <p className="text-muted-foreground">Segunda a Sexta: 7h às 18h</p>
-                  <p className="text-muted-foreground">Sábado: 8h às 12h</p>
+                  <p className="text-muted-foreground">{school.openingHoursWeekdays || 'Segunda a Sexta: 7h às 18h'}</p>
+                  <p className="text-muted-foreground">{school.openingHoursSaturday || 'Sábado: 8h às 12h'}</p>
                 </div>
               </div>
             </div>
