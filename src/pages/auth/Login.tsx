@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '@/lib/auth';
 import { ROLE_DASHBOARDS } from '@/types/roles';
+import { supabase } from '@/lib/supabase';
 
 export function Login() {
   const navigate = useNavigate();
@@ -15,10 +16,18 @@ export function Login() {
     setError(null);
     setLoading(true);
     try {
-      await signIn(email, password);
-      // Redirect will be handled by ProtectedRoute / useAuth state change
-      // For now redirect to a default; actual role-based redirect happens in App
-      navigate('/');
+      const { data } = await signIn(email, password);
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        const dashboard = ROLE_DASHBOARDS[profile?.role ?? 'parent'];
+        navigate(dashboard, { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao entrar. Verifique suas credenciais.');
     } finally {
