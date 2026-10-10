@@ -68,7 +68,12 @@ BEGIN
     new_user_id,
     new_user_id,
     'Admin@diretor',
-    '{"sub":"' || new_user_id::text || '","email":"Admin@diretor","email_verified":true,"phone_verified":false}'::jsonb,
+    jsonb_build_object(
+      'sub', new_user_id::text,
+      'email', 'Admin@diretor',
+      'email_verified', true,
+      'phone_verified', false
+    ),
     'email',
     now(),
     now(),
